@@ -4,7 +4,7 @@ export const state = {
   ordenActual: Array.from({ length: 60 }, (_, i) => i),
   cartasLibres: new Set(),
   cartasDescartadas: new Set(),
-  slotsOcupados: [null, null],
+  slotsOcupados: [null, null, null, null, null],
   desplegadoEnGrilla: false,
   barajeado: false,
   ultimoLayout: null,
@@ -25,7 +25,7 @@ export function inicializarEstado(baraja) {
   state.ordenActual = Array.from({ length: 60 }, (_, i) => i);
   state.cartasLibres.clear();
   state.cartasDescartadas.clear();
-  state.slotsOcupados = [null, null];
+  state.slotsOcupados = [null, null, null, null, null];
   state.desplegadoEnGrilla = false;
   state.barajeado = false;
   state.ultimoLayout = null;
@@ -60,13 +60,12 @@ export function ordenarMazo() {
 export function limpiarMano() {
   state.cartasLibres.clear();
   state.cartasDescartadas.clear();
-  state.slotsOcupados = [null, null];
+  state.slotsOcupados = [null, null, null, null, null];
   state.manoCrupier = [];
   state.cartaOcultaIdx = null;
   state.fase = 'esperando';
   state.cartasExtra = [];
   state.resultado = null;
-  state.maxCartasMano = 2;
   state.recargasRestantes = 3;
   state.desplegadoEnGrilla = false;
 }
@@ -113,11 +112,11 @@ export function sacarDelMazo() {
   return null;
 }
 
-/** Recolecta todas las cartas del jugador (slots + extra) */
+/** Recolecta todas las cartas del jugador (slots activos + extra) */
 export function cartasJugador() {
   const cartas = [];
-  for (const idx of state.slotsOcupados) {
-    if (idx !== null) cartas.push(state.baraja[idx]);
+  for (let s = 0; s < state.maxCartasMano; s++) {
+    if (state.slotsOcupados[s] !== null) cartas.push(state.baraja[state.slotsOcupados[s]]);
   }
   for (const idx of state.cartasExtra) {
     cartas.push(state.baraja[idx]);

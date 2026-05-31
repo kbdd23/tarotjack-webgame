@@ -22,7 +22,9 @@ export function setupDevTools(panel) {
       if (!hayCartasFuera()) return;
       limpiarMano();
       ocultarResultado();
-      refs.cartasDOM.forEach(div => div.classList.remove('carta-oculta'));
+      refs.cartasDOM.forEach(div => {
+        div.classList.remove('carta-oculta', 'carta-jugador', 'carta-crupier');
+      });
       posicionarApilado();
       resetearUI();
     },
@@ -30,7 +32,9 @@ export function setupDevTools(panel) {
     barajar: () => {
       barajarMazo();
       ocultarResultado();
-      refs.cartasDOM.forEach(div => div.classList.remove('carta-oculta'));
+      refs.cartasDOM.forEach(div => {
+        div.classList.remove('carta-oculta', 'carta-jugador', 'carta-crupier');
+      });
       if (hayCartasFuera()) desplegarGrilla();
       else posicionarApilado();
       resetearUI();
@@ -39,10 +43,35 @@ export function setupDevTools(panel) {
     ordenar: () => {
       ordenarMazo();
       ocultarResultado();
-      refs.cartasDOM.forEach(div => div.classList.remove('carta-oculta'));
+      refs.cartasDOM.forEach(div => {
+        div.classList.remove('carta-oculta', 'carta-jugador', 'carta-crupier');
+      });
       if (hayCartasFuera()) desplegarGrilla();
       else posicionarApilado();
       resetearUI();
+    },
+
+    aumentarMano: () => {
+      state.maxCartasMano = Math.min(state.maxCartasMano + 1, 5);
+
+      // Mostrar/ocultar slots según el nuevo límite
+      refs.slots.forEach((slot, i) => {
+        slot.style.display = i < state.maxCartasMano ? '' : 'none';
+      });
+
+      if (state.fase === 'jugando') {
+        let count = 0;
+        for (let s = 0; s < state.maxCartasMano; s++) {
+          if (state.slotsOcupados[s] !== null) count++;
+        }
+        count += state.cartasExtra.length;
+        panel.actualizarContador(count, state.maxCartasMano);
+
+        // Desbloquear PEDIR si hay espacio disponible
+        if (refs.btnPedir) {
+          refs.btnPedir.disabled = count >= state.maxCartasMano;
+        }
+      }
     },
   };
 }

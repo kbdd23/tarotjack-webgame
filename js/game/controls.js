@@ -16,10 +16,9 @@ import {
   actualizarPuntuacion, actualizarPuntuacionCrupier,
   actualizarRecargas, ocultarResultado,
 } from '../ui/display.js';
-import { calcularPuntaje } from '../core/domain.js';
 import { iniciarTurno } from './crupier.js';
 
-export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnDescartar) {
+export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnDescartar, btnRetirarse) {
 
   // --- REPARTIR ---
 
@@ -29,41 +28,34 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
     limpiarMano();
     ocultarResultado();
 
-    let slotCount = 0;
-    for (let r = 0; r < 2; r++) {
-      let slotLibre = -1;
-      for (let s = 0; s < state.slotsOcupados.length; s++) {
-        if (state.slotsOcupados[s] === null) { slotLibre = s; break; }
-      }
-      if (slotLibre === -1) break;
+    // Secuencia: una al jugador → una al crupier → otra al jugador
+    const cj1 = sacarDelMazo();
+    if (cj1 === null) return;
+    state.slotsOcupados[0] = cj1;
+    escalarASlot(refs.cartasDOM[cj1], 0);
 
-      const cartaIdx = sacarDelMazo();
-      if (cartaIdx === null) break;
+    const cc1 = sacarDelMazo();
+    if (cc1 === null) { limpiarMano(); return; }
+    state.manoCrupier = [cc1];
 
-      state.slotsOcupados[slotLibre] = cartaIdx;
-      escalarASlot(refs.cartasDOM[cartaIdx], slotLibre);
-      slotCount++;
-    }
+    const cj2 = sacarDelMazo();
+    if (cj2 === null) { limpiarMano(); return; }
+    state.slotsOcupados[1] = cj2;
+    escalarASlot(refs.cartasDOM[cj2], 1);
 
-    if (slotCount < 2) return;
-
-    const cartaCrupier1 = sacarDelMazo();
-    const cartaCrupier2 = sacarDelMazo();
-    if (cartaCrupier1 === null || cartaCrupier2 === null) {
-      limpiarMano();
-      return;
-    }
-
-    state.manoCrupier = [cartaCrupier1];
-    state.cartaOcultaIdx = cartaCrupier2;
+    // Crupier sin carta oculta inicial
+    state.cartaOcultaIdx = null;
 
     setTimeout(() => { posicionarCrupier(); }, 300);
 
     state.fase = 'jugando';
     btnRepartir.style.display = 'none';
-    panel.actualizarContador(slotCount, state.maxCartasMano);
+    panel.actualizarContador(2, state.maxCartasMano);
     actualizarPuntuacion();
     panel.mostrarJuego();
+
+    // Habilitar PEDIR si el handicap permite más cartas
+    if (state.maxCartasMano > 2) btnPedir.disabled = false;
   });
 
   // --- PEDIR (hit) ---
@@ -72,8 +64,8 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
     if (state.fase !== 'jugando') return;
 
     let countAct = 0;
-    for (const idx of state.slotsOcupados) {
-      if (idx !== null) countAct++;
+    for (let s = 0; s < state.maxCartasMano; s++) {
+      if (state.slotsOcupados[s] !== null) countAct++;
     }
     countAct += state.cartasExtra.length;
     if (countAct >= state.maxCartasMano) {
@@ -87,7 +79,7 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
     const div = refs.cartasDOM[cartaIdx];
 
     let slotLibre = -1;
-    for (let s = 0; s < state.slotsOcupados.length; s++) {
+    for (let s = 0; s < state.maxCartasMano; s++) {
       if (state.slotsOcupados[s] === null) { slotLibre = s; break; }
     }
 
@@ -109,8 +101,8 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
 
     // Calcular conteo actual para el contador y el límite de cartas
     let nuevoCount = 0;
-    for (const idx of state.slotsOcupados) {
-      if (idx !== null) nuevoCount++;
+    for (let s = 0; s < state.maxCartasMano; s++) {
+      if (state.slotsOcupados[s] !== null) nuevoCount++;
     }
     nuevoCount += state.cartasExtra.length;
     panel.actualizarContador(nuevoCount, state.maxCartasMano);
@@ -119,18 +111,6 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
       btnPedir.disabled = true;
     }
 
-    const cartasJug = [];
-    for (const idx of state.slotsOcupados) {
-      if (idx !== null) cartasJug.push(state.baraja[idx]);
-    }
-    for (const idx of state.cartasExtra) {
-      cartasJug.push(state.baraja[idx]);
-    }
-    const pj = calcularPuntaje(cartasJug);
-    if (pj > 21) {
-      state.fase = 'crupier';
-      ejecutarTurnoCrupier();
-    }
   });
 
   // --- JUGAR (plantarse) ---
@@ -158,9 +138,15 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
 
   btnNuevaMano.addEventListener('click', () => {
     limpiarMano();
+    state.maxCartasMano = 2;
 
     refs.btnDescartar.disabled = false;
     refs.recargasDisplay.classList.remove('agotado');
+
+    // Restaurar slots a solo 2 visibles
+    refs.slots.forEach((slot, i) => {
+      slot.style.display = i < 2 ? '' : 'none';
+    });
 
     refs.cartasDOM.forEach(div => {
       div.classList.remove('carta-oculta', 'carta-jugador', 'carta-crupier');
@@ -179,14 +165,22 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
   btnDescartar.addEventListener('click', () => {
     if (state.fase !== 'jugando') return;
     if (state.recargasRestantes <= 0) return;
-    const tieneCartas = state.slotsOcupados[0] !== null || state.slotsOcupados[1] !== null;
+
+    // Verificar si hay al menos una carta en los slots activos
+    let tieneCartas = false;
+    for (let s = 0; s < state.maxCartasMano; s++) {
+      if (state.slotsOcupados[s] !== null) { tieneCartas = true; break; }
+    }
     if (!tieneCartas) return;
+
     state.recargasRestantes--;
     if (state.recargasRestantes <= 0) {
       btnDescartar.disabled = true;
       refs.recargasDisplay.classList.add('agotado');
     }
-    for (let s = 0; s < 2; s++) {
+
+    // Descartar slots activos
+    for (let s = 0; s < state.maxCartasMano; s++) {
       const idx = state.slotsOcupados[s];
       if (idx !== null) {
         state.slotsOcupados[s] = null;
@@ -194,14 +188,59 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
         animarADescarte(refs.cartasDOM[idx]);
       }
     }
+
+    // Descartar cartas extra también
+    for (const idx of state.cartasExtra) {
+      state.cartasDescartadas.add(idx);
+      animarADescarte(refs.cartasDOM[idx]);
+    }
+    state.cartasExtra = [];
+
+    // Si el crupier no tiene carta oculta aún, la roba
+    if (state.cartaOcultaIdx === null) {
+      const oculta = sacarDelMazo();
+      if (oculta !== null) {
+        state.cartaOcultaIdx = oculta;
+        posicionarCrupier();
+      }
+    }
+
     actualizarPuntuacion();
     actualizarRecargas();
     let count = 0;
-    for (const idx of state.slotsOcupados) {
-      if (idx !== null) count++;
+    for (let s = 0; s < state.maxCartasMano; s++) {
+      if (state.slotsOcupados[s] !== null) count++;
     }
     count += state.cartasExtra.length;
     panel.actualizarContador(count, state.maxCartasMano);
     btnPedir.disabled = false;
+  });
+
+  // --- RETIRARSE ---
+
+  btnRetirarse.addEventListener('click', () => {
+    if (state.fase === 'esperando') return;
+
+    limpiarMano();
+    state.maxCartasMano = 2;
+
+    refs.btnDescartar.disabled = false;
+    refs.recargasDisplay.classList.remove('agotado');
+
+    // Restaurar slots a solo 2 visibles
+    refs.slots.forEach((slot, i) => {
+      slot.style.display = i < 2 ? '' : 'none';
+    });
+
+    refs.cartasDOM.forEach(div => {
+      div.classList.remove('carta-oculta', 'carta-jugador', 'carta-crupier');
+      div.style.transition = '';
+    });
+    posicionarApilado();
+    ocultarResultado();
+    panel.mostrarRepartir();
+    actualizarPuntuacion();
+    actualizarRecargas();
+    actualizarPuntuacionCrupier(false);
   });
 }

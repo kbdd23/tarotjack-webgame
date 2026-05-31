@@ -13,6 +13,7 @@ export const refs = {
   zonaDescarte: null,
   btnDescartar: null,
   recargasDisplay: null,
+  descarteDisplay: null,
   btnRow: null,
   zonaExtra: null,
   // --- CRUPIER ---
@@ -113,10 +114,11 @@ export function crearPlaceholders(zona) {
   const filaSlots = document.createElement('div');
   filaSlots.className = 'slots-fila';
 
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < 5; i++) {
     const slot = document.createElement('div');
     slot.className = 'slot-mano';
     slot.dataset.slot = i;
+    slot.style.display = i < 2 ? '' : 'none';
     filaSlots.appendChild(slot);
   }
 

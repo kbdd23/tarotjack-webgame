@@ -39,6 +39,9 @@ export function actualizarRecargas() {
   if (refs.recargasDisplay) {
     refs.recargasDisplay.textContent = String(state.recargasRestantes);
   }
+  if (refs.descarteDisplay) {
+    refs.descarteDisplay.textContent = `${state.recargasRestantes}/3`;
+  }
 }
 
 // --- RESULTADO ---

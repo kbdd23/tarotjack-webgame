@@ -16,7 +16,7 @@ export function iniciarArrastre(e, div) {
   if (idx === state.cartaOcultaIdx) return;
   if (state.cartasExtra.includes(idx)) return;
 
-  for (let s = 0; s < state.slotsOcupados.length; s++) {
+  for (let s = 0; s < state.maxCartasMano; s++) {
     if (state.slotsOcupados[s] === idx) {
       state.slotsOcupados[s] = null;
       actualizarPuntuacion();
@@ -64,8 +64,9 @@ function detectarSnap(div) {
   const slots = refs.slots;
   if (!slots) return false;
 
-  for (let i = 0; i < slots.length; i++) {
+  for (let i = 0; i < state.maxCartasMano; i++) {
     if (state.slotsOcupados[i] !== null) continue;
+    if (slots[i].style.display === 'none') continue;
 
     const slotRect = slots[i].getBoundingClientRect();
     const scx = slotRect.left + slotRect.width / 2;

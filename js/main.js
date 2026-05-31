@@ -1,7 +1,7 @@
 // --- MAIN: bootstrap de la aplicación ---
 
 import { crearBaraja } from './core/deck.js';
-import { state, inicializarEstado } from './core/state.js';
+import { state, inicializarEstado, limpiarMano } from './core/state.js';
 import {
   crearCartas, crearLabels, crearPlaceholders,
   crearZonaDescarte, crearZonaCrupier, crearResultadoDisplay,
@@ -25,7 +25,208 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const subTop = document.createElement('div');
   subTop.className = 'sub-seccion sub-superior';
+
+  const subTopTop = document.createElement('div');
+  subTopTop.className = 'sub-inner';
+  subTop.appendChild(subTopTop);
+
+  const subTopBottom = document.createElement('div');
+  subTopBottom.className = 'sub-inner';
+  subTop.appendChild(subTopBottom);
+
   mesaChica.appendChild(subTop);
+
+  const subMiddle = document.createElement('div');
+  subMiddle.className = 'sub-middle';
+
+  const midLeft = document.createElement('div');
+  midLeft.className = 'mid-half mid-left';
+
+  const midLeftTop = document.createElement('div');
+  midLeftTop.style.display = 'flex';
+  midLeftTop.style.flexDirection = 'column';
+  midLeftTop.style.flex = '1';
+  midLeftTop.style.gap = '6px';
+  midLeftTop.style.overflow = 'hidden';
+
+  const midLeftTopInner1 = document.createElement('div');
+  midLeftTopInner1.className = 'sub-inner';
+
+  const opcionesBtn = document.createElement('button');
+  opcionesBtn.textContent = 'OPCIONES';
+  opcionesBtn.style.width = '100%';
+  opcionesBtn.style.height = '100%';
+  opcionesBtn.style.background = '#1a2a4a';
+  opcionesBtn.style.border = '1px solid #d4a017';
+  opcionesBtn.style.borderRadius = '8px';
+  opcionesBtn.style.color = '#e0eef8';
+  opcionesBtn.style.fontSize = '1rem';
+  opcionesBtn.style.letterSpacing = '0.3em';
+  opcionesBtn.style.fontWeight = 'bold';
+  opcionesBtn.style.cursor = 'pointer';
+  opcionesBtn.style.fontFamily = "'Courier New', Courier, monospace";
+  opcionesBtn.style.transition = 'background 0.2s, color 0.2s';
+  opcionesBtn.addEventListener('mouseenter', () => {
+    opcionesBtn.style.background = '#2a3a5a';
+    opcionesBtn.style.color = '#fff';
+  });
+  opcionesBtn.addEventListener('mouseleave', () => {
+    opcionesBtn.style.background = '#1a2a4a';
+    opcionesBtn.style.color = '#e0eef8';
+  });
+  midLeftTopInner1.appendChild(opcionesBtn);
+
+  midLeftTop.appendChild(midLeftTopInner1);
+
+  const midLeftTopInner2 = document.createElement('div');
+  midLeftTopInner2.className = 'sub-inner';
+
+  const retirarseBtn = document.createElement('button');
+  retirarseBtn.textContent = 'RETIRARSE';
+  retirarseBtn.style.width = '100%';
+  retirarseBtn.style.height = '100%';
+  retirarseBtn.style.background = '#1a2a4a';
+  retirarseBtn.style.border = '1px solid #d4a017';
+  retirarseBtn.style.borderRadius = '8px';
+  retirarseBtn.style.color = '#e0eef8';
+  retirarseBtn.style.fontSize = '1rem';
+  retirarseBtn.style.letterSpacing = '0.3em';
+  retirarseBtn.style.fontWeight = 'bold';
+  retirarseBtn.style.cursor = 'pointer';
+  retirarseBtn.style.fontFamily = "'Courier New', Courier, monospace";
+  retirarseBtn.style.transition = 'background 0.2s, color 0.2s';
+  retirarseBtn.addEventListener('mouseenter', () => {
+    retirarseBtn.style.background = '#2a3a5a';
+    retirarseBtn.style.color = '#fff';
+  });
+  retirarseBtn.addEventListener('mouseleave', () => {
+    retirarseBtn.style.background = '#1a2a4a';
+    retirarseBtn.style.color = '#e0eef8';
+  });
+  midLeftTopInner2.appendChild(retirarseBtn);
+
+  midLeftTop.appendChild(midLeftTopInner2);
+
+  midLeft.appendChild(midLeftTop);
+
+  const midLeftBottom = document.createElement('div');
+  midLeftBottom.className = 'mid-half-inner';
+  midLeftBottom.style.flex = '0 0 auto';
+  midLeftBottom.style.background = '#1a3a1a';
+  midLeftBottom.style.border = '1px solid #d4a017';
+  midLeftBottom.style.borderRadius = '6px';
+  midLeftBottom.style.padding = '10px';
+  midLeftBottom.style.gap = '8px';
+  midLeftBottom.style.cursor = 'pointer';
+  midLeftBottom.style.transition = 'background 0.2s';
+  midLeftBottom.addEventListener('mouseenter', () => { midLeftBottom.style.background = '#2a4a2a'; });
+  midLeftBottom.addEventListener('mouseleave', () => { midLeftBottom.style.background = '#1a3a1a'; });
+
+  const shopLabel = document.createElement('span');
+  shopLabel.textContent = 'TIENDA';
+  shopLabel.style.color = '#ddd';
+  shopLabel.style.fontSize = '0.75rem';
+  shopLabel.style.letterSpacing = '0.3em';
+  shopLabel.style.fontWeight = 'bold';
+  shopLabel.style.padding = '4px 18px';
+  shopLabel.style.border = '1px solid rgba(212, 160, 23, 0.3)';
+  shopLabel.style.borderRadius = '10px';
+  shopLabel.style.background = 'transparent';
+  midLeftBottom.appendChild(shopLabel);
+
+  const shopCount = document.createElement('div');
+  shopCount.textContent = '0';
+  shopCount.style.flex = '1';
+  shopCount.style.display = 'flex';
+  shopCount.style.alignItems = 'center';
+  shopCount.style.justifyContent = 'center';
+  shopCount.style.color = '#ddd';
+  shopCount.style.fontSize = '2rem';
+  shopCount.style.fontWeight = 'bold';
+  shopCount.style.cursor = 'pointer';
+  shopCount.style.transition = 'color 0.2s';
+  shopCount.addEventListener('mouseenter', () => { shopCount.style.color = '#fff'; });
+  shopCount.addEventListener('mouseleave', () => { shopCount.style.color = '#ddd'; });
+  midLeftBottom.appendChild(shopCount);
+
+  midLeft.appendChild(midLeftBottom);
+
+  subMiddle.appendChild(midLeft);
+
+  const midRight = document.createElement('div');
+  midRight.className = 'mid-half mid-right';
+
+  const midRightTop = document.createElement('div');
+  midRightTop.className = 'mid-half-inner';
+  midRightTop.style.background = '#7a0e0e';
+  midRightTop.style.border = '1px solid #d4a017';
+  midRightTop.style.borderRadius = '6px';
+  midRightTop.style.padding = '10px';
+  midRightTop.style.gap = '8px';
+
+  const roundLabel = document.createElement('span');
+  roundLabel.textContent = 'RONDA';
+  roundLabel.style.color = '#ddd';
+  roundLabel.style.fontSize = '0.75rem';
+  roundLabel.style.letterSpacing = '0.3em';
+  roundLabel.style.fontWeight = 'bold';
+  roundLabel.style.padding = '4px 18px';
+  roundLabel.style.border = '1px solid rgba(212, 160, 23, 0.3)';
+  roundLabel.style.borderRadius = '10px';
+  roundLabel.style.background = 'transparent';
+  midRightTop.appendChild(roundLabel);
+
+  const roundCount = document.createElement('div');
+  roundCount.textContent = '0';
+  roundCount.style.flex = '1';
+  roundCount.style.display = 'flex';
+  roundCount.style.alignItems = 'center';
+  roundCount.style.justifyContent = 'center';
+  roundCount.style.color = '#ddd';
+  roundCount.style.fontSize = '2rem';
+  roundCount.style.fontWeight = 'bold';
+  midRightTop.appendChild(roundCount);
+
+  midRight.appendChild(midRightTop);
+
+  const midRightBottom = document.createElement('div');
+  midRightBottom.className = 'mid-half-inner';
+  midRightBottom.style.background = '#7a0e0e';
+  midRightBottom.style.border = '1px solid #d4a017';
+  midRightBottom.style.borderRadius = '6px';
+  midRightBottom.style.padding = '10px';
+  midRightBottom.style.gap = '8px';
+
+  const descLabel = document.createElement('span');
+  descLabel.textContent = 'DESCARTES';
+  descLabel.style.color = '#ddd';
+  descLabel.style.fontSize = '0.75rem';
+  descLabel.style.letterSpacing = '0.3em';
+  descLabel.style.fontWeight = 'bold';
+  descLabel.style.padding = '4px 18px';
+  descLabel.style.border = '1px solid rgba(212, 160, 23, 0.3)';
+  descLabel.style.borderRadius = '10px';
+  descLabel.style.background = 'transparent';
+  midRightBottom.appendChild(descLabel);
+
+  const descCount = document.createElement('div');
+  descCount.textContent = '3/3';
+  descCount.style.flex = '1';
+  descCount.style.display = 'flex';
+  descCount.style.alignItems = 'center';
+  descCount.style.justifyContent = 'center';
+  descCount.style.color = '#ddd';
+  descCount.style.fontSize = '2rem';
+  descCount.style.fontWeight = 'bold';
+  midRightBottom.appendChild(descCount);
+
+  refs.descarteDisplay = descCount;
+
+  midRight.appendChild(midRightBottom);
+
+  subMiddle.appendChild(midRight);
+
+  mesaChica.appendChild(subMiddle);
 
   const subBottom = document.createElement('div');
   subBottom.className = 'sub-seccion sub-bottom';
@@ -99,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const panel = setupPanel(btnRepartir, contadorDisplay, btnPedir, btnJugar, btnNuevaMano);
 
   // --- CONECTAR CONTROLES ---
-  setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnDescartar);
+  setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnDescartar, retirarseBtn);
 
   // --- DRAG & DROP ---
   conectarDrag();
@@ -133,6 +334,12 @@ document.addEventListener('DOMContentLoaded', () => {
   btnOrdenar.textContent = 'ORDENAR';
   btnOrdenar.addEventListener('click', devTools.ordenar);
   devToolsContainer.appendChild(btnOrdenar);
+
+  const btnMasCarta = document.createElement('button');
+  btnMasCarta.className = 'dev-btn';
+  btnMasCarta.textContent = '+1 CARTA';
+  btnMasCarta.addEventListener('click', devTools.aumentarMano);
+  devToolsContainer.appendChild(btnMasCarta);
 
   body.appendChild(devToolsContainer);
 

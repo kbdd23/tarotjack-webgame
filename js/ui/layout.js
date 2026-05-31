@@ -36,6 +36,7 @@ export function posicionarApilado() {
 
   refs.cartasDOM.forEach((div, i) => {
     if (esCartaEnJuego(i)) return;
+    div.classList.remove('carta-jugador', 'carta-crupier');
     div.style.width = '80px';
     div.style.height = '110px';
     div.style.transform = `translate(${x}px, ${y}px)`;
