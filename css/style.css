@@ -1,0 +1,694 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  background-color: #7a0e0e;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1rem;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+/* --- MESA PRINCIPAL --- */
+#mesa {
+  flex: 4;
+  max-width: 1100px;
+  height: 92vh;
+  max-height: 900px;
+  background-color: #2d1b3d;
+  border-radius: 24px;
+  box-shadow:
+    0 0 0 4px #ccc,
+    0 0 0 12px #5a5a5a,
+    0 8px 32px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* --- MESA CHICA (lateral) --- */
+#mesa-chica {
+  flex: 1;
+  max-width: 420px;
+  height: 92vh;
+  max-height: 900px;
+  background-color: #2d1b3d;
+  border-radius: 24px;
+  box-shadow:
+    0 0 0 4px #ccc,
+    0 0 0 12px #5a5a5a,
+    0 8px 32px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+#mesa h1, #mesa-chica h1 {
+  color: #c0c0c0;
+  font-size: 1.2rem;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  opacity: 0.3;
+  user-select: none;
+  margin-bottom: 0.5rem;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.sub-seccion {
+  width: 100%;
+  flex-shrink: 0;
+  border: 1px solid #4a3a5a;
+  border-radius: 8px;
+  background: rgba(60, 40, 80, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #6a5a7a;
+  font-size: 0.85rem;
+  letter-spacing: 0.2em;
+  overflow: hidden;
+}
+
+.sub-superior {
+  flex: 1;
+  margin-bottom: 8px;
+}
+
+.sub-bottom {
+  flex: 0 0 auto;
+  padding: 20px 0;
+  margin-top: auto;
+  border: 1px solid #4a3a5a;
+  border-radius: 8px;
+  background: rgba(60, 40, 80, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 100px;
+}
+
+/* --- ZONA DE CARTAS --- */
+#zona-cartas {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Arco semicircular inferior */
+#zona-cartas::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  left: 5%;
+  width: 90%;
+  height: 380px;
+  border: 3px solid #d4a017;
+  border-radius: 0 0 50% 50%;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+/* Arco semicircular superior */
+#zona-cartas::after {
+  content: '';
+  position: absolute;
+  top: -160px;
+  left: 12%;
+  width: 76%;
+  height: 280px;
+  border: 2px solid #d4a017;
+  border-radius: 0 0 50% 50%;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.35;
+}
+
+/* --- CARTA --- */
+.carta {
+  position: absolute;
+  width: 80px;
+  height: 110px;
+  background: #555;
+  border-radius: 6px;
+  box-shadow:
+    inset 0 0 0 1px #666,
+    0 2px 4px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4px 5px;
+  user-select: none;
+  flex-shrink: 0;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.3s ease, height 0.3s ease;
+  cursor: grab;
+  will-change: transform, width, height;
+}
+
+.carta:active {
+  cursor: grabbing;
+}
+
+.carta:hover {
+  background: #606060;
+  box-shadow:
+    inset 0 0 0 1px #777,
+    0 4px 8px rgba(0,0,0,0.4);
+  z-index: 10;
+}
+
+.carta-esquina {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.carta-esquina.abajo {
+  transform: rotate(180deg);
+}
+
+.carta-numero {
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: #ccc;
+}
+
+.carta-centro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 1px;
+}
+
+.carta-palo {
+  font-size: 1rem;
+  color: #aaa;
+}
+
+.carta-arcano {
+  font-size: 0.5rem;
+  color: #aaa;
+  text-align: center;
+  line-height: 1.05;
+  max-width: 70px;
+  word-wrap: break-word;
+}
+
+/* --- ETIQUETAS DE PALO --- */
+.palo-label {
+  position: absolute;
+  width: 28px;
+  font-size: 1.1rem;
+  text-align: center;
+  color: #777;
+  left: 0;
+  display: none;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+
+/* --- ZONA DE MANO (SLOTS) --- */
+#zona-mano {
+  position: absolute;
+  top: 78%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+#puntuacion-mano {
+  color: #ccc;
+  font-size: 1.1rem;
+  letter-spacing: 0.2em;
+  background: rgba(0,0,0,0.3);
+  padding: 4px 16px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+#puntuacion-mano.quemado {
+  color: #c44;
+  background: rgba(180, 40, 40, 0.3);
+}
+
+.slots-fila {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+}
+
+.slot-mano {
+  width: 144px;
+  height: 198px;
+  border: 2px dashed #555;
+  border-radius: 8px;
+  background: rgba(80, 80, 80, 0.15);
+}
+
+/* --- ZONA DE DESCARTA --- */
+#zona-descarte {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 80px;
+  height: 110px;
+  border: 2px dashed #4a4a4a;
+  border-radius: 6px;
+  background: rgba(60, 60, 60, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4a4a4a;
+  font-size: 1.4rem;
+  font-weight: bold;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* --- BOTONES DE MANO --- */
+.btn-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  margin-top: 24px;
+  pointer-events: auto;
+}
+
+.recargas-counter {
+  color: #aaa;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  background: rgba(0,0,0,0.3);
+  padding: 2px 10px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.recargas-counter.agotado {
+  color: #844;
+}
+
+#btn-descartar {
+  background: #666;
+  border: none;
+  color: #ccc;
+  font-size: 1.1rem;
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#btn-descartar:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+#btn-descartar:hover {
+  background: #777;
+  color: #eee;
+}
+
+#btn-jugar {
+  background: #666;
+  border: none;
+  color: #ccc;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.3em;
+  width: 114px;
+  height: 38px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+#btn-jugar:hover {
+  background: #777;
+  color: #eee;
+}
+
+#btn-jugar:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+#btn-jugar:disabled:hover {
+  background: #666;
+  color: #ccc;
+}
+
+
+/* --- CONTADOR DE MANO (en sub-bottom) --- */
+#contador-mano {
+  color: #c0b090;
+  font-size: 2rem;
+  font-weight: bold;
+  letter-spacing: 0.3em;
+  text-shadow: 0 0 12px rgba(212, 160, 23, 0.2);
+  user-select: none;
+}
+
+/* --- BOTÓN PEDIR (a la derecha, deshabilitado por ahora) --- */
+#btn-pedir {
+  position: absolute;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  background: #444;
+  border: 1px solid #3a3a3a;
+  color: #555;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.3em;
+  padding: 10px 28px;
+  border-radius: 6px;
+  cursor: default;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  z-index: 20;
+  opacity: 0.5;
+}
+
+#btn-pedir:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+#btn-pedir:disabled:hover {
+  background: #444;
+  color: #555;
+  border-color: #3a3a3a;
+}
+
+#btn-pedir:not(:disabled) {
+  background: #666;
+  color: #ccc;
+  border-color: #5a5a5a;
+  opacity: 1;
+  cursor: pointer;
+}
+
+#btn-pedir:not(:disabled):hover {
+  background: #777;
+  color: #eee;
+  border-color: #888;
+}
+
+/* --- BOTÓN NUEVA MANO --- */
+#btn-repartir {
+  background: #666;
+  border: none;
+  color: #ccc;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1.4rem;
+  letter-spacing: 0.4em;
+  padding: 14px 48px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+#btn-repartir:hover {
+  background: #777;
+  color: #eee;
+  box-shadow: 0 0 16px rgba(212, 160, 23, 0.3);
+}
+
+/* --- BOTÓN NUEVA MANO (en sub-bottom) --- */
+#btn-nueva-mano {
+  background: #555;
+  border: 1px solid #d4a017;
+  color: #d4a017;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1.2rem;
+  letter-spacing: 0.4em;
+  padding: 10px 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+#btn-nueva-mano:hover {
+  background: #666;
+  color: #e8b828;
+  box-shadow: 0 0 16px rgba(212, 160, 23, 0.4);
+}
+
+/* --- ZONA CRUPIER --- */
+#zona-crupier {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* --- CONTORNOS DE CARTAS --- */
+.carta.carta-crupier {
+  outline: 2px solid #4488cc;
+  outline-offset: -1px;
+}
+
+.carta.carta-jugador {
+  outline: 2px solid #d4a017;
+  outline-offset: -1px;
+}
+
+.punt-crupier {
+  color: #aaa;
+  font-size: 0.9rem;
+  letter-spacing: 0.2em;
+  background: rgba(0,0,0,0.25);
+  padding: 2px 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.punt-crupier.quemado {
+  color: #c44;
+  background: rgba(180, 40, 40, 0.3);
+}
+
+/* --- CARTA OCULTA (dorso) --- */
+.carta.carta-oculta {
+  background: linear-gradient(135deg, #2a1a3a 0%, #3a2a4a 50%, #2a1a3a 100%);
+  box-shadow:
+    inset 0 0 0 2px #4a3a5a,
+    inset 0 0 0 4px #2a1a3a,
+    0 2px 4px rgba(0,0,0,0.3);
+  cursor: default;
+}
+
+.carta.carta-oculta:hover {
+  background: linear-gradient(135deg, #2a1a3a 0%, #3a2a4a 50%, #2a1a3a 100%);
+  box-shadow:
+    inset 0 0 0 2px #5a4a6a,
+    inset 0 0 0 4px #2a1a3a,
+    0 4px 8px rgba(0,0,0,0.4);
+}
+
+.carta.carta-oculta::before {
+  content: '\2726';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.8rem;
+  color: rgba(180, 150, 80, 0.5);
+  text-shadow: 0 0 8px rgba(212, 160, 23, 0.2);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.carta.carta-oculta::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  border: 1px solid rgba(180, 150, 80, 0.15);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.carta.carta-oculta .carta-esquina,
+.carta.carta-oculta .carta-centro {
+  opacity: 0;
+}
+
+/* --- RESULTADO --- */
+#resultado-partida {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.5rem;
+  font-weight: bold;
+  letter-spacing: 0.3em;
+  text-shadow:
+    0 0 20px rgba(0,0,0,0.6),
+    0 0 40px rgba(0,0,0,0.4);
+  z-index: 50;
+  pointer-events: none;
+  animation: resultadoAparecer 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#resultado-partida.ganaste {
+  color: #4c4;
+  text-shadow:
+    0 0 20px rgba(0, 200, 0, 0.4),
+    0 0 60px rgba(0, 200, 0, 0.2);
+  animation:
+    resultadoAparecer 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+    resultadoFlotar 2s ease-in-out 0.5s infinite;
+}
+
+#resultado-partida.perdiste {
+  color: #c44;
+  text-shadow:
+    0 0 20px rgba(200, 0, 0, 0.4),
+    0 0 60px rgba(200, 0, 0, 0.2);
+  animation:
+    resultadoAparecer 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+    resultadoSacudir 0.6s ease 0.5s;
+}
+
+#resultado-partida.empate {
+  color: #cc8;
+  text-shadow:
+    0 0 20px rgba(200, 200, 0, 0.3),
+    0 0 60px rgba(200, 200, 0, 0.15);
+  animation:
+    resultadoAparecer 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+    resultadoLatir 1.5s ease-in-out 0.5s infinite;
+}
+
+@keyframes resultadoAparecer {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes resultadoFlotar {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -55%) scale(1.05);
+  }
+}
+
+@keyframes resultadoSacudir {
+  0%, 100% {
+    transform: translate(-50%, -50%);
+  }
+  20% {
+    transform: translate(calc(-50% - 6px), -50%);
+  }
+  40% {
+    transform: translate(calc(-50% + 6px), -50%);
+  }
+  60% {
+    transform: translate(calc(-50% - 4px), -50%);
+  }
+  80% {
+    transform: translate(calc(-50% + 4px), -50%);
+  }
+}
+
+@keyframes resultadoLatir {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.03);
+    opacity: 0.7;
+  }
+}
+
+/* --- ZONA EXTRA (cartas pedidas) --- */
+#zona-extra {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* --- DEV-TOOLS --- */
+#dev-tools {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 100;
+}
+
+.dev-btn {
+  background: #444;
+  border: none;
+  color: #888;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.dev-btn:hover {
+  background: #666;
+  color: #ccc;
+}
