@@ -5,7 +5,7 @@
 
 import {
   state,
-  sacarDelMazo, limpiarMano,
+  sacarDelMazo, limpiarMano, barajarMazo, finalizarRonda,
 } from '../core/state.js';
 import { refs } from '../ui/dom.js';
 import {
@@ -53,6 +53,8 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
     panel.actualizarContador(2, state.maxCartasMano);
     actualizarPuntuacion();
     panel.mostrarJuego();
+    state.rondaActual += 1;
+    refs.rondaDisplay.textContent = state.rondaActual;
 
     // Habilitar PEDIR si el handicap permite más cartas
     if (state.maxCartasMano > 2) btnPedir.disabled = false;
@@ -137,8 +139,16 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
   // --- NUEVA MANO ---
 
   btnNuevaMano.addEventListener('click', () => {
-    limpiarMano();
+    const resultado = state.resultado;
+
+    if (resultado === 'perdiste') {
+      barajarMazo();
+      state.rondaActual = 0;
+    } else {
+      finalizarRonda();
+    }
     state.maxCartasMano = 2;
+    refs.rondaDisplay.textContent = state.rondaActual;
 
     refs.btnDescartar.disabled = false;
     refs.recargasDisplay.classList.remove('agotado');
@@ -221,8 +231,10 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
   btnRetirarse.addEventListener('click', () => {
     if (state.fase === 'esperando') return;
 
-    limpiarMano();
+    barajarMazo();
     state.maxCartasMano = 2;
+    state.rondaActual = 0;
+    refs.rondaDisplay.textContent = state.rondaActual;
 
     refs.btnDescartar.disabled = false;
     refs.recargasDisplay.classList.remove('agotado');

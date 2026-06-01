@@ -164,7 +164,9 @@ function calcularLayout() {
   const zonaRect = refs.zona.getBoundingClientRect();
   const anchoDisp = zonaRect.width - LABEL_W - 16;
   const altoDisp = zonaRect.height - 16;
-  const cols = 15, filas = 4;
+  const filas = 4;
+  const totalCartas = state.ordenActual.length;
+  const cols = totalCartas / filas;  // 15 para tarot (60), 13 para blackjack (52)
   const gapX = 2, gapY = 4;
   const wIdeal = (anchoDisp - (cols - 1) * gapX) / cols;
   const hIdeal = (altoDisp - (filas - 1) * gapY) / filas;
@@ -184,7 +186,7 @@ function calcularLayout() {
   const totalH = filas * h + (filas - 1) * gapY;
   const offsetX = Math.round((zonaRect.width - totalW - LABEL_W) / 2 + LABEL_W);
   const offsetY = Math.round((zonaRect.height - totalH) / 2);
-  return { w, h, gapX, gapY, offsetX, offsetY };
+  return { w, h, gapX, gapY, cols, offsetX, offsetY };
 }
 
 export function desplegarGrilla() {
@@ -198,8 +200,8 @@ export function desplegarGrilla() {
     if (state.cartasExtra.includes(idxDOM)) return;
 
     const posEnOrden = state.ordenActual.indexOf(idxDOM);
-    const fila = Math.floor(posEnOrden / 15);
-    const col = posEnOrden % 15;
+    const fila = Math.floor(posEnOrden / layout.cols);
+    const col = posEnOrden % layout.cols;
 
     const px = layout.offsetX + col * (layout.w + layout.gapX);
     const py = layout.offsetY + fila * (layout.h + layout.gapY);

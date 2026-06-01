@@ -18,11 +18,14 @@ export const state = {
   cartasExtra: [],   // índices de cartas pedidas por el jugador
   resultado: null,   // 'ganaste' | 'perdiste' | 'empate'
   maxCartasMano: 2,  // máximo de cartas que puede tener el jugador en mano
+  rondaActual: 0,    // contador de rondas (win streak)
+  tipoMazo: 'tarot', // 'tarot' | 'blackjack'
 };
 
-export function inicializarEstado(baraja) {
+export function inicializarEstado(baraja, tipo) {
   state.baraja = baraja;
-  state.ordenActual = Array.from({ length: 60 }, (_, i) => i);
+  state.tipoMazo = tipo || 'tarot';
+  state.ordenActual = Array.from({ length: baraja.length }, (_, i) => i);
   state.cartasLibres.clear();
   state.cartasDescartadas.clear();
   state.slotsOcupados = [null, null, null, null, null];
@@ -36,6 +39,7 @@ export function inicializarEstado(baraja) {
   state.cartasExtra = [];
   state.resultado = null;
   state.maxCartasMano = 2;
+  state.rondaActual = 0;
 }
 
 export function hayCartasFuera() {
@@ -44,6 +48,7 @@ export function hayCartasFuera() {
 
 export function barajarMazo() {
   limpiarMano();
+  state.cartasDescartadas.clear();
   for (let i = state.ordenActual.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [state.ordenActual[i], state.ordenActual[j]] = [state.ordenActual[j], state.ordenActual[i]];
@@ -53,18 +58,52 @@ export function barajarMazo() {
 
 export function ordenarMazo() {
   limpiarMano();
-  state.ordenActual = Array.from({ length: 60 }, (_, i) => i);
+  state.cartasDescartadas.clear();
+  state.ordenActual = Array.from({ length: state.baraja.length }, (_, i) => i);
   state.barajeado = false;
 }
 
 export function limpiarMano() {
   state.cartasLibres.clear();
-  state.cartasDescartadas.clear();
   state.slotsOcupados = [null, null, null, null, null];
   state.manoCrupier = [];
   state.cartaOcultaIdx = null;
   state.fase = 'esperando';
   state.cartasExtra = [];
+  state.resultado = null;
+  state.recargasRestantes = 3;
+  state.desplegadoEnGrilla = false;
+}
+
+/** Mueve las cartas de la ronda actual al descarte y resetea el estado para la próxima mano.
+ *  NO baraja ni devuelve descartes al mazo — el mazo se reduce progresivamente.
+ *  Para reinicio completo usar barajarMazo(). */
+export function finalizarRonda() {
+  // Mover slots del jugador a descarte
+  for (let s = 0; s < state.maxCartasMano; s++) {
+    if (state.slotsOcupados[s] !== null) {
+      state.cartasDescartadas.add(state.slotsOcupados[s]);
+      state.slotsOcupados[s] = null;
+    }
+  }
+  // Mover mano del crupier a descarte
+  for (const idx of state.manoCrupier) {
+    state.cartasDescartadas.add(idx);
+  }
+  state.manoCrupier = [];
+  // Mover carta oculta a descarte
+  if (state.cartaOcultaIdx !== null) {
+    state.cartasDescartadas.add(state.cartaOcultaIdx);
+    state.cartaOcultaIdx = null;
+  }
+  // Mover cartas extra a descarte
+  for (const idx of state.cartasExtra) {
+    state.cartasDescartadas.add(idx);
+  }
+  state.cartasExtra = [];
+  // Resetear estado
+  state.cartasLibres.clear();
+  state.fase = 'esperando';
   state.resultado = null;
   state.recargasRestantes = 3;
   state.desplegadoEnGrilla = false;

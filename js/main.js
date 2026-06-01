@@ -1,9 +1,9 @@
 // --- MAIN: bootstrap de la aplicación ---
 
-import { crearBaraja } from './core/deck.js';
-import { state, inicializarEstado, limpiarMano } from './core/state.js';
+import { crearBaraja, crearBarajaBlackjack } from './core/deck.js';
+import { state, inicializarEstado, limpiarMano, barajarMazo } from './core/state.js';
 import {
-  crearCartas, crearLabels, crearPlaceholders,
+  crearCartas, refrescarCartas, crearLabels, crearPlaceholders,
   crearZonaDescarte, crearZonaCrupier, crearResultadoDisplay,
   refs,
 } from './ui/dom.js';
@@ -75,6 +75,76 @@ document.addEventListener('DOMContentLoaded', () => {
     opcionesBtn.style.color = '#e0eef8';
   });
   midLeftTopInner1.appendChild(opcionesBtn);
+
+  // --- PANEL OVERLAY DE OPCIONES (selección de mazo) ---
+  const overlay = document.createElement('div');
+  overlay.id = 'overlay-opciones';
+  Object.assign(overlay.style, {
+    position: 'fixed', inset: '0', zIndex: '9999',
+    background: 'rgba(0,0,0,0.7)', display: 'none',
+    alignItems: 'center', justifyContent: 'center',
+  });
+
+  const panelOpc = document.createElement('div');
+  Object.assign(panelOpc.style, {
+    background: '#0a1628', border: '2px solid #d4a017',
+    borderRadius: '12px', padding: '32px 48px',
+    minWidth: '320px', textAlign: 'center',
+    boxShadow: '0 0 40px rgba(212,160,23,0.3)',
+  });
+
+  const titulo = document.createElement('h2');
+  titulo.textContent = 'MAZO';
+  Object.assign(titulo.style, {
+    color: '#d4a017', fontFamily: "'Courier New', monospace",
+    fontSize: '1.6rem', letterSpacing: '0.4em', margin: '0 0 24px 0',
+  });
+  panelOpc.appendChild(titulo);
+
+  const crearBtnMazo = (texto, tipo) => {
+    const btn = document.createElement('button');
+    btn.textContent = texto;
+    Object.assign(btn.style, {
+      display: 'block', width: '100%', padding: '14px 0',
+      margin: '10px 0', background: '#1a2a4a',
+      border: '1px solid #d4a017', borderRadius: '8px',
+      color: '#e0eef8', fontSize: '1.2rem', letterSpacing: '0.3em',
+      fontWeight: 'bold', cursor: 'pointer', fontFamily: "'Courier New', monospace",
+      transition: 'background 0.2s, color 0.2s',
+    });
+    btn.addEventListener('mouseenter', () => { btn.style.background = '#2a3a5a'; btn.style.color = '#fff'; });
+    btn.addEventListener('mouseleave', () => { btn.style.background = '#1a2a4a'; btn.style.color = '#e0eef8'; });
+    btn.addEventListener('click', () => cambiarMazo(tipo));
+    return btn;
+  };
+
+  const cambiarMazo = (tipo) => {
+    if (tipo === state.tipoMazo) { overlay.style.display = 'none'; return; }
+
+    const baraja = tipo === 'blackjack' ? crearBarajaBlackjack() : crearBaraja();
+    refrescarCartas(baraja, tipo);
+    inicializarEstado(baraja, tipo);
+    barajarMazo();
+    conectarDrag();
+
+    body.classList.toggle('mazo-blackjack', tipo === 'blackjack');
+
+    requestAnimationFrame(() => { posicionarApilado(); });
+    overlay.style.display = 'none';
+  };
+
+  panelOpc.appendChild(crearBtnMazo('TarotJack', 'tarot'));
+  panelOpc.appendChild(crearBtnMazo('BlackJack', 'blackjack'));
+
+  overlay.appendChild(panelOpc);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.style.display = 'none';
+  });
+  body.appendChild(overlay);
+
+  opcionesBtn.addEventListener('click', () => {
+    overlay.style.display = overlay.style.display === 'none' ? 'flex' : 'none';
+  });
 
   midLeftTop.appendChild(midLeftTopInner1);
 
@@ -186,6 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
   roundCount.style.fontSize = '2rem';
   roundCount.style.fontWeight = 'bold';
   midRightTop.appendChild(roundCount);
+  refs.rondaDisplay = roundCount;
 
   midRight.appendChild(midRightTop);
 
@@ -235,8 +306,10 @@ document.addEventListener('DOMContentLoaded', () => {
   body.insertBefore(mesaChica, mesa);
 
   // --- BARAJAS Y ESTADO ---
-  const baraja = crearBaraja();
-  inicializarEstado(baraja);
+  const baraja = crearBarajaBlackjack();
+  inicializarEstado(baraja, 'blackjack');
+  barajarMazo();
+  body.classList.add('mazo-blackjack');
 
   // --- ZONA DE CARTAS ---
   const zona = document.createElement('div');

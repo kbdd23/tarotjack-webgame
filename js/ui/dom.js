@@ -24,6 +24,7 @@ export const refs = {
   btnPedir: null,
   btnJugar: null,
   btnNuevaMano: null,
+  rondaDisplay: null,
 };
 
 // --- CARTAS ---
@@ -32,28 +33,85 @@ export function crearCartas(baraja, zona) {
   refs.zona = zona;
   refs.cartasDOM = [];
 
+  const esBlackjack = baraja.length === 52;
+
   for (let i = 0; i < baraja.length; i++) {
     const div = document.createElement('div');
     div.className = 'carta';
     div.dataset.idx = i;
 
     const carta = baraja[i];
-    const valorStr = carta.valor === 0 ? '0' : carta.valor;
+    const valorStr = carta.display;
+    const paloChico = esBlackjack ? `<span class="carta-palo-chico">${carta.palo}</span>` : '';
+    const esquinaAbajo = esBlackjack
+      ? `<div class="carta-esquina abajo"><span class="carta-numero">${valorStr}</span>${paloChico}</div>`
+      : `<div class="carta-esquina abajo"><span class="carta-numero">${valorStr}</span></div>`;
 
     div.innerHTML = `
       <div class="carta-esquina">
         <span class="carta-numero">${valorStr}</span>
+        ${paloChico}
       </div>
       <div class="carta-centro">
         <span class="carta-palo">${carta.palo}</span>
         <span class="carta-arcano">${carta.arcano}</span>
       </div>
-      <div class="carta-esquina abajo">
-        <span class="carta-numero">${valorStr}</span>
-      </div>
+      ${esquinaAbajo}
     `;
 
     zona.appendChild(div);
+    refs.cartasDOM.push(div);
+  }
+
+  // Asignar color del palo (negro/rojo) a cada carta para que herede a número y palo
+  // Solo para blackjack (52 cartas) — tarot usa colores fijos del CSS (#ccc / #aaa)
+  if (esBlackjack) {
+    refs.cartasDOM.forEach((div, i) => {
+      div.style.color = baraja[i].color;
+    });
+  }
+}
+
+/** Recrea las cartas del DOM a partir de una nueva baraja.
+ *  Limpia la zona de cartas, remueve los divs viejos y crea nuevos.
+ *  @param {'tarot'|'blackjack'} tipo — para blackjack asigna color inline (herencia CSS) */
+export function refrescarCartas(baraja, tipo) {
+  // Remover divs viejos
+  for (const div of refs.cartasDOM) {
+    div.remove();
+  }
+  refs.cartasDOM = [];
+
+  // Recrear con la baraja actual
+  const esBlackjack = tipo === 'blackjack';
+
+  for (let i = 0; i < baraja.length; i++) {
+    const div = document.createElement('div');
+    div.className = 'carta';
+    div.dataset.idx = i;
+
+    const carta = baraja[i];
+    const valorStr = carta.display;
+    const paloChico = esBlackjack ? `<span class="carta-palo-chico">${carta.palo}</span>` : '';
+    const esquinaAbajo = esBlackjack
+      ? `<div class="carta-esquina abajo"><span class="carta-numero">${valorStr}</span>${paloChico}</div>`
+      : `<div class="carta-esquina abajo"><span class="carta-numero">${valorStr}</span></div>`;
+
+    // En blackjack, el color del texto sigue al palo (negro/rojo)
+    if (esBlackjack) div.style.color = carta.color;
+
+    div.innerHTML = `
+      <div class="carta-esquina">
+        <span class="carta-numero">${valorStr}</span>
+        ${paloChico}
+      </div>
+      <div class="carta-centro">
+        <span class="carta-palo">${carta.palo}</span>
+        <span class="carta-arcano">${carta.arcano}</span>
+      </div>
+      ${esquinaAbajo}`;
+
+    refs.zona.appendChild(div);
     refs.cartasDOM.push(div);
   }
 }

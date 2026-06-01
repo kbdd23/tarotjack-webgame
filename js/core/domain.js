@@ -2,26 +2,28 @@
 
 import { state, sacarDelMazo } from './state.js';
 
-// Puntaje de una mano según reglas de blackjack
+// Puntaje de una mano según reglas de blackjack.
+// Usa la propiedad `puntosBlackjack` de cada carta:
+//   [n]      — valor fijo (2-10, figuras=10, arcanos 2-14)
+//   [0, 11]  — Loco en tarot
+//   [1, 11]  — As en blackjack
 export function calcularPuntaje(cartas) {
   let suma = 0;
-  let locos = 0;
+  let flexibles = 0;  // cartas con rango (A: [1,11] o Loco: [0,11])
 
   for (const c of cartas) {
-    if (c.valor === 0) {
-      locos++;
+    const pts = c.puntosBlackjack || [c.valor];
+    if (pts.length > 1) {
+      flexibles++;
+      suma += pts[0];  // valor mínimo
     } else {
-      suma += c.valor;
+      suma += pts[0];
     }
   }
 
-  // Asignar valor óptimo a los Locos (0 o 11)
-  for (let i = 0; i < locos; i++) {
-    if (suma + 11 <= 21) {
-      suma += 11;
-    } else {
-      suma += 0;
-    }
+  // Optimizar: cambiar mínimo por máximo si no se quema
+  for (let i = 0; i < flexibles; i++) {
+    if (suma + 10 <= 21) suma += 10;
   }
 
   return suma;

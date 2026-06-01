@@ -6,6 +6,7 @@ import { actualizarPuntuacion } from '../ui/display.js';
 const SNAP_THRESHOLD = 70;
 
 let arrastrando = null;
+let _dragInicializado = false;
 
 export function iniciarArrastre(e, div) {
   if (state.fase !== 'jugando') return;
@@ -113,6 +114,8 @@ export function conectarDrag() {
     });
   });
 
+  if (_dragInicializado) return;
+  _dragInicializado = true;
   refs.zona.addEventListener('mousemove', moverArrastre);
   document.addEventListener('mouseup', terminarArrastre);
   refs.zona.addEventListener('dragstart', e => e.preventDefault());
