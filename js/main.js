@@ -414,6 +414,12 @@ document.addEventListener('DOMContentLoaded', () => {
   btnMasCarta.addEventListener('click', devTools.aumentarMano);
   devToolsContainer.appendChild(btnMasCarta);
 
+  const btnDescTodas = document.createElement('button');
+  btnDescTodas.className = 'dev-btn';
+  btnDescTodas.textContent = 'DESC. TODAS';
+  btnDescTodas.addEventListener('click', devTools.descartarTodas);
+  devToolsContainer.appendChild(btnDescTodas);
+
   body.appendChild(devToolsContainer);
 
   // --- INICIO ---

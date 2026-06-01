@@ -20,6 +20,7 @@ export const state = {
   maxCartasMano: 2,  // máximo de cartas que puede tener el jugador en mano
   rondaActual: 0,    // contador de rondas (win streak)
   tipoMazo: 'tarot', // 'tarot' | 'blackjack'
+  reshuffleReciente: false, // true cuando sacarDelMazo hizo reshuffle
 };
 
 export function inicializarEstado(baraja, tipo) {
@@ -40,6 +41,7 @@ export function inicializarEstado(baraja, tipo) {
   state.resultado = null;
   state.maxCartasMano = 2;
   state.rondaActual = 0;
+  state.reshuffleReciente = false;
 }
 
 export function hayCartasFuera() {
@@ -135,7 +137,8 @@ export function descartarSlot(slotIdx) {
   return idx;
 }
 
-/** Devuelve el índice de la siguiente carta disponible del mazo, o null si no queda */
+/** Devuelve el índice de la siguiente carta disponible del mazo, o null si no queda.
+ *  NO hace reshuffle automático — llamar a hacerReshuffle() cuando devuelva null y haya descartes. */
 export function sacarDelMazo() {
   for (let i = state.ordenActual.length - 1; i >= 0; i--) {
     const idx = state.ordenActual[i];
@@ -149,6 +152,18 @@ export function sacarDelMazo() {
     return idx;
   }
   return null;
+}
+
+/** Recupera todas las cartas descartadas, baraja el mazo y marca reshuffle reciente.
+ *  Debe llamarse cuando sacarDelMazo() devuelva null y cartasDescartadas tenga cartas. */
+export function hacerReshuffle() {
+  state.reshuffleReciente = true;
+  state.cartasDescartadas.clear();
+  for (let i = state.ordenActual.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [state.ordenActual[i], state.ordenActual[j]] = [state.ordenActual[j], state.ordenActual[i]];
+  }
+  state.barajeado = true;
 }
 
 /** Recolecta todas las cartas del jugador (slots activos + extra) */

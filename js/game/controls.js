@@ -5,12 +5,12 @@
 
 import {
   state,
-  sacarDelMazo, limpiarMano, barajarMazo, finalizarRonda,
+  sacarDelMazo, limpiarMano, barajarMazo, finalizarRonda, hacerReshuffle,
 } from '../core/state.js';
 import { refs } from '../ui/dom.js';
 import {
   posicionarApilado, posicionarCrupier, posicionarExtra,
-  animarADescarte, escalarASlot,
+  animarADescarte, escalarASlot, animarReshuffle,
 } from '../ui/layout.js';
 import {
   actualizarPuntuacion, actualizarPuntuacionCrupier,
@@ -20,25 +20,87 @@ import { iniciarTurno } from './crupier.js';
 
 export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnDescartar, btnRetirarse) {
 
+  /** Helper que obtiene una carta del mazo. Si no quedan, hace reshuffle (descarte→mazo),
+   *  anima, espera 2s y reintenta. */
+  async function _sacarCarta() {
+    let idx = sacarDelMazo();
+    if (idx !== null) return idx;
+    if (state.cartasDescartadas.size === 0) return null;
+
+    hacerReshuffle();
+    animarReshuffle();
+
+    refs.resultadoDisplay.textContent = 'RECARGANDO BARAJA';
+    refs.resultadoDisplay.className = 'recargando';
+    refs.resultadoDisplay.style.display = 'block';
+
+    // Barajar rítmicamente al compás del pulso para efecto de "revolviendo"
+    const ritmo = setInterval(() => {
+      for (let i = state.ordenActual.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [state.ordenActual[i], state.ordenActual[j]] = [state.ordenActual[j], state.ordenActual[i]];
+      }
+      state.barajeado = true;
+      // Actualizar zIndex de las cartas del mazo (sin reposicionar todo)
+      refs.cartasDOM.forEach((div, i) => {
+        if (div.style.display === 'none') return;
+        const pos = state.ordenActual.indexOf(i);
+        if (pos !== -1) div.style.zIndex = pos;
+      });
+    }, 300);
+
+    await new Promise(r => setTimeout(r, 2000));
+
+    clearInterval(ritmo);
+    idx = sacarDelMazo();
+    state.reshuffleReciente = false;
+    ocultarResultado();
+    return idx;
+  }
+
   // --- REPARTIR ---
 
-  btnRepartir.addEventListener('click', () => {
+  btnRepartir.addEventListener('click', async () => {
     if (state.fase === 'jugando') return;
+
+    // Animación de barajado inicial solo en la primera ronda
+    if (state.rondaActual === 0) {
+      refs.resultadoDisplay.textContent = 'BARAJANDO';
+      refs.resultadoDisplay.className = 'recargando';
+      refs.resultadoDisplay.style.display = 'block';
+
+      const ritmo = setInterval(() => {
+        for (let i = state.ordenActual.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [state.ordenActual[i], state.ordenActual[j]] = [state.ordenActual[j], state.ordenActual[i]];
+        }
+        state.barajeado = true;
+        refs.cartasDOM.forEach((div, i) => {
+          if (div.style.display === 'none') return;
+          const pos = state.ordenActual.indexOf(i);
+          if (pos !== -1) div.style.zIndex = pos;
+        });
+      }, 300);
+
+      await new Promise(r => setTimeout(r, 2000));
+      clearInterval(ritmo);
+      ocultarResultado();
+    }
 
     limpiarMano();
     ocultarResultado();
 
     // Secuencia: una al jugador → una al crupier → otra al jugador
-    const cj1 = sacarDelMazo();
+    const cj1 = await _sacarCarta();
     if (cj1 === null) return;
     state.slotsOcupados[0] = cj1;
     escalarASlot(refs.cartasDOM[cj1], 0);
 
-    const cc1 = sacarDelMazo();
+    const cc1 = await _sacarCarta();
     if (cc1 === null) { limpiarMano(); return; }
     state.manoCrupier = [cc1];
 
-    const cj2 = sacarDelMazo();
+    const cj2 = await _sacarCarta();
     if (cj2 === null) { limpiarMano(); return; }
     state.slotsOcupados[1] = cj2;
     escalarASlot(refs.cartasDOM[cj2], 1);
@@ -62,7 +124,7 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
 
   // --- PEDIR (hit) ---
 
-  btnPedir.addEventListener('click', () => {
+  btnPedir.addEventListener('click', async () => {
     if (state.fase !== 'jugando') return;
 
     let countAct = 0;
@@ -75,7 +137,7 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
       return;
     }
 
-    const cartaIdx = sacarDelMazo();
+    const cartaIdx = await _sacarCarta();
     if (cartaIdx === null) return;
 
     const div = refs.cartasDOM[cartaIdx];
@@ -172,7 +234,7 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
 
   // --- DESCARTA (recarga) ---
 
-  btnDescartar.addEventListener('click', () => {
+  btnDescartar.addEventListener('click', async () => {
     if (state.fase !== 'jugando') return;
     if (state.recargasRestantes <= 0) return;
 
@@ -208,7 +270,7 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
 
     // Si el crupier no tiene carta oculta aún, la roba
     if (state.cartaOcultaIdx === null) {
-      const oculta = sacarDelMazo();
+      const oculta = await _sacarCarta();
       if (oculta !== null) {
         state.cartaOcultaIdx = oculta;
         posicionarCrupier();
@@ -224,6 +286,7 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
     count += state.cartasExtra.length;
     panel.actualizarContador(count, state.maxCartasMano);
     btnPedir.disabled = false;
+
   });
 
   // --- RETIRARSE ---

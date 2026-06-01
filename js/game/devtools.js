@@ -73,5 +73,19 @@ export function setupDevTools(panel) {
         }
       }
     },
+
+    descartarTodas: () => {
+      // Mover todas las cartas que no estén en juego a descarte
+      for (let i = 0; i < state.baraja.length; i++) {
+        if (state.cartasLibres.has(i)) continue;
+        if (state.manoCrupier.includes(i)) continue;
+        if (state.slotsOcupados.includes(i)) continue;
+        if (i === state.cartaOcultaIdx) continue;
+        if (state.cartasExtra.includes(i)) continue;
+        state.cartasDescartadas.add(i);
+      }
+      posicionarApilado();
+      resetearUI();
+    },
   };
 }

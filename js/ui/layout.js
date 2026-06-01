@@ -24,6 +24,7 @@ function esCartaEnJuego(idx) {
   if (state.manoCrupier.includes(idx)) return true;
   if (idx === state.cartaOcultaIdx) return true;
   if (state.cartasExtra.includes(idx)) return true;
+  if (state.slotsOcupados.includes(idx)) return true;
   return false;
 }
 
@@ -65,6 +66,45 @@ export function posicionarDescartes() {
     div.style.zIndex = 1;
     div.classList.remove('carta-oculta');
   });
+}
+
+/** Anima las cartas descartadas de vuelta a la posición del mazo.
+ *  - Captura posiciones actuales de las descartadas
+ *  - Las mueve al pile con transición
+ *  - Finaliza llamando posicionarApilado() */
+export function animarReshuffle() {
+  const zonaRect = refs.zona.getBoundingClientRect();
+  const destinoX = Math.round(zonaRect.width - 80 - 16);
+  const destinoY = 70;
+
+  const descartadas = [];
+  refs.cartasDOM.forEach((div, i) => {
+    if (state.cartasDescartadas.has(i)) {
+      descartadas.push(div);
+    }
+  });
+
+  if (descartadas.length === 0) { posicionarApilado(); return; }
+
+  // Forzar reflow para capturar posición actual antes de limpiar estado
+  descartadas.forEach(div => { void div.getBoundingClientRect(); });
+
+  state.cartasDescartadas.clear();
+
+  descartadas.forEach((div, i) => {
+    div.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+    div.style.width = '80px';
+    div.style.height = '110px';
+    div.style.transform = `translate(${destinoX}px, ${destinoY}px)`;
+    div.style.zIndex = i + 1;
+    div.classList.remove('carta-jugador', 'carta-crupier');
+  });
+
+  // Al terminar la animación, reposicionar todo correctamente
+  setTimeout(() => {
+    descartadas.forEach(div => { div.style.transition = ''; });
+    posicionarApilado();
+  }, 650);
 }
 
 // --- CRUPIER ---
