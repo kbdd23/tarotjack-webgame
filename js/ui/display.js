@@ -1,6 +1,6 @@
 // --- DISPLAY: puntuaciones, contador, resultado, recargas ---
 
-import { state, cartasJugador } from '../core/state.js';
+import { state, cartasJugador, MAX_RONDAS } from '../core/state.js';
 import { calcularPuntaje } from '../core/domain.js';
 import { refs } from './dom.js';
 
@@ -80,4 +80,63 @@ export function mostrarDescarte(visible) {
   if (refs.zonaDescarte) {
     refs.zonaDescarte.style.display = visible ? '' : 'none';
   }
+}
+
+// --- RONDA ---
+
+export function actualizarRondaDisplay() {
+  if (refs.rondaDisplay) {
+    refs.rondaDisplay.textContent = `${state.rondaActual}/${MAX_RONDAS}`;
+  }
+}
+
+// --- PUNTOS POR RONDA ---
+
+let _dibujarPuntos = null;
+
+export function registrarDibujarPuntos(fn) {
+  _dibujarPuntos = fn;
+}
+
+export function actualizarPuntosDisplay() {
+  if (_dibujarPuntos) {
+    _dibujarPuntos(state.historialRondas);
+  }
+}
+
+// --- HP CRUPIER ---
+
+let _setHp = null;
+
+export function registrarSetHp(fn) {
+  _setHp = fn;
+}
+
+export function actualizarHpDisplay(val) {
+  const v = val !== undefined ? val : state.hpCrupierRestante;
+  if (_setHp) _setHp(v);
+}
+
+// --- VIBRACIÓN CRUPIER ---
+
+let _temblarCrupier = null;
+
+export function registrarTemblarCrupier(fn) {
+  _temblarCrupier = fn;
+}
+
+export function temblarCrupier() {
+  if (_temblarCrupier) _temblarCrupier();
+}
+
+// --- ACTUALIZAR BOSS EN WIDGET ---
+
+let _setBoss = null;
+
+export function registrarSetBoss(fn) {
+  _setBoss = fn;
+}
+
+export function actualizarBossDisplay(boss) {
+  if (_setBoss) _setBoss(boss);
 }

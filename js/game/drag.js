@@ -7,9 +7,19 @@ const SNAP_THRESHOLD = 70;
 
 let arrastrando = null;
 let _dragInicializado = false;
+let _dragHabilitado = false;
+
+export function setDragHabilitado(val) {
+  _dragHabilitado = val;
+}
+
+export function getDragHabilitado() {
+  return _dragHabilitado;
+}
 
 export function iniciarArrastre(e, div) {
   if (state.fase !== 'jugando') return;
+  if (!_dragHabilitado && !div.classList.contains('carta-jugador')) return;
 
   const idx = parseInt(div.dataset.idx);
 

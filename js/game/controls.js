@@ -5,7 +5,7 @@
 
 import {
   state,
-  sacarDelMazo, limpiarMano, barajarMazo, finalizarRonda, hacerReshuffle,
+  sacarDelMazo, limpiarMano, barajarMazo, finalizarRonda, hacerReshuffle, MAX_RONDAS, BOSSES,
 } from '../core/state.js';
 import { refs } from '../ui/dom.js';
 import {
@@ -14,7 +14,7 @@ import {
 } from '../ui/layout.js';
 import {
   actualizarPuntuacion, actualizarPuntuacionCrupier,
-  actualizarRecargas, ocultarResultado,
+  actualizarRecargas, ocultarResultado, actualizarRondaDisplay, actualizarPuntosDisplay, actualizarHpDisplay, temblarCrupier, actualizarBossDisplay,
 } from '../ui/display.js';
 import { iniciarTurno } from './crupier.js';
 
@@ -116,7 +116,7 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
     actualizarPuntuacion();
     panel.mostrarJuego();
     state.rondaActual += 1;
-    refs.rondaDisplay.textContent = state.rondaActual;
+    actualizarRondaDisplay();
 
     // Habilitar PEDIR si el handicap permite más cartas
     if (state.maxCartasMano > 2) btnPedir.disabled = false;
@@ -192,6 +192,8 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
 
     iniciarTurno().then(() => {
       panel.mostrarNuevaMano();
+      state.historialRondas.push(state.resultado);
+      actualizarPuntosDisplay();
 
       btnPedir.disabled = false;
       btnJugar.disabled = false;
@@ -203,14 +205,37 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
   btnNuevaMano.addEventListener('click', () => {
     const resultado = state.resultado;
 
-    if (resultado === 'perdiste') {
+    if (state.rondaActual >= MAX_RONDAS) {
+      // Llegó a 5 rondas → evaluar resultado de la partida
+      const ganadas = state.historialRondas.filter(r => r === 'ganaste').length;
+      const perdidas = state.historialRondas.filter(r => r === 'perdiste').length;
+      if (ganadas > perdidas) {
+        state.hpCrupierRestante = Math.max(0, state.hpCrupierRestante - 1);
+        temblarCrupier();
+      } else {
+        // Derrota o empate → muerte súbita: reinicio completo
+        state.bossActual = 0;
+        state.hpCrupierRestante = BOSSES[0].hp;
+        actualizarBossDisplay(BOSSES[0]);
+        temblarCrupier();
+      }
+      actualizarHpDisplay();
+
+      // Avanzar de boss si HP llegó a 0
+      if (state.hpCrupierRestante === 0) {
+        state.bossActual = (state.bossActual + 1) % BOSSES.length;
+        state.hpCrupierRestante = BOSSES[state.bossActual].hp;
+        actualizarHpDisplay();
+      }
       barajarMazo();
       state.rondaActual = 0;
+      state.historialRondas = [];
+      actualizarPuntosDisplay();
     } else {
       finalizarRonda();
     }
     state.maxCartasMano = 2;
-    refs.rondaDisplay.textContent = state.rondaActual;
+    actualizarRondaDisplay();
 
     refs.btnDescartar.disabled = false;
     refs.recargasDisplay.classList.remove('agotado');
@@ -297,7 +322,13 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
     barajarMazo();
     state.maxCartasMano = 2;
     state.rondaActual = 0;
-    refs.rondaDisplay.textContent = state.rondaActual;
+    state.historialRondas = [];
+    state.bossActual = 0;
+    state.hpCrupierRestante = BOSSES[0].hp;
+    actualizarBossDisplay(BOSSES[0]);
+    actualizarRondaDisplay();
+    actualizarPuntosDisplay();
+    actualizarHpDisplay();
 
     refs.btnDescartar.disabled = false;
     refs.recargasDisplay.classList.remove('agotado');

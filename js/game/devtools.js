@@ -4,6 +4,7 @@ import { state, barajarMazo, ordenarMazo, limpiarMano, hayCartasFuera } from '..
 import { refs } from '../ui/dom.js';
 import { posicionarApilado, desplegarGrilla } from '../ui/layout.js';
 import { actualizarPuntuacion, actualizarPuntuacionCrupier, ocultarResultado } from '../ui/display.js';
+import { setDragHabilitado, getDragHabilitado } from './drag.js';
 
 export function setupDevTools(panel) {
   function resetearUI() {
@@ -86,6 +87,11 @@ export function setupDevTools(panel) {
       }
       posicionarApilado();
       resetearUI();
+    },
+
+    toggleDrag: () => {
+      const nuevo = !getDragHabilitado();
+      setDragHabilitado(nuevo);
     },
   };
 }

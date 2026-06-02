@@ -1,7 +1,7 @@
 // --- UI: creación de elementos DOM ---
 
 import { state } from '../core/state.js';
-import { PALOS } from '../core/deck.js';
+import { PALOS } from '../core/deck/barrel.js';
 
 export const refs = {
   cartasDOM: [],

@@ -1,4 +1,23 @@
 // --- ESTADO GLOBAL ---
+//
+// Responsabilidad: cápsula del estado del juego + funciones de mutación
+// que no son operaciones de baraja (extraídas a deck-ops.js).
+//
+// Las operaciones de baraja se re-exportan desde deck-ops.js para
+// mantener compatibilidad con los imports existentes.
+
+// Re-export de operaciones de baraja (extraídas por modularización)
+export { barajarMazo, ordenarMazo, sacarDelMazo, hacerReshuffle } from './deck/operations.js';
+
+export const MAX_RONDAS = 5;
+
+export const BOSSES = [
+  { nombre: 'Chile',    archivo: 'chilean_crupier-removebg-preview.png',    hp: 3 },
+  { nombre: 'Argentina', archivo: 'argentina_crupier-removebg-preview.png', hp: 4 },
+  { nombre: 'Brasil',    archivo: 'brasil_crupier-removebg-preview.png',    hp: 5 },
+  { nombre: 'España',    archivo: 'spain_crupier-removebg-preview.png',    hp: 7 },
+  { nombre: 'Diablo',    archivo: 'devil_crupier-removebg-preview.png',    hp: 10 },
+];
 
 export const state = {
   ordenActual: Array.from({ length: 60 }, (_, i) => i),
@@ -19,6 +38,9 @@ export const state = {
   resultado: null,   // 'ganaste' | 'perdiste' | 'empate'
   maxCartasMano: 2,  // máximo de cartas que puede tener el jugador en mano
   rondaActual: 0,    // contador de rondas (win streak)
+  historialRondas: [], // 'ganaste' | 'perdiste' | 'empate'
+  bossActual: 0,
+  hpCrupierRestante: 3,
   tipoMazo: 'tarot', // 'tarot' | 'blackjack'
   reshuffleReciente: false, // true cuando sacarDelMazo hizo reshuffle
 };
@@ -41,28 +63,14 @@ export function inicializarEstado(baraja, tipo) {
   state.resultado = null;
   state.maxCartasMano = 2;
   state.rondaActual = 0;
+  state.historialRondas = [];
+  state.bossActual = 0;
+  state.hpCrupierRestante = BOSSES[0].hp;
   state.reshuffleReciente = false;
 }
 
 export function hayCartasFuera() {
   return state.cartasLibres.size > 0 || state.desplegadoEnGrilla;
-}
-
-export function barajarMazo() {
-  limpiarMano();
-  state.cartasDescartadas.clear();
-  for (let i = state.ordenActual.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [state.ordenActual[i], state.ordenActual[j]] = [state.ordenActual[j], state.ordenActual[i]];
-  }
-  state.barajeado = true;
-}
-
-export function ordenarMazo() {
-  limpiarMano();
-  state.cartasDescartadas.clear();
-  state.ordenActual = Array.from({ length: state.baraja.length }, (_, i) => i);
-  state.barajeado = false;
 }
 
 export function limpiarMano() {
@@ -135,35 +143,6 @@ export function descartarSlot(slotIdx) {
   state.slotsOcupados[slotIdx] = null;
   state.cartasDescartadas.add(idx);
   return idx;
-}
-
-/** Devuelve el índice de la siguiente carta disponible del mazo, o null si no queda.
- *  NO hace reshuffle automático — llamar a hacerReshuffle() cuando devuelva null y haya descartes. */
-export function sacarDelMazo() {
-  for (let i = state.ordenActual.length - 1; i >= 0; i--) {
-    const idx = state.ordenActual[i];
-    if (state.cartasLibres.has(idx)) continue;
-    if (state.cartasDescartadas.has(idx)) continue;
-    if (state.manoCrupier.includes(idx)) continue;
-    if (state.slotsOcupados.includes(idx)) continue;
-    if (idx === state.cartaOcultaIdx) continue;
-    if (state.cartasExtra.includes(idx)) continue;
-    state.cartasLibres.add(idx);
-    return idx;
-  }
-  return null;
-}
-
-/** Recupera todas las cartas descartadas, baraja el mazo y marca reshuffle reciente.
- *  Debe llamarse cuando sacarDelMazo() devuelva null y cartasDescartadas tenga cartas. */
-export function hacerReshuffle() {
-  state.reshuffleReciente = true;
-  state.cartasDescartadas.clear();
-  for (let i = state.ordenActual.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [state.ordenActual[i], state.ordenActual[j]] = [state.ordenActual[j], state.ordenActual[i]];
-  }
-  state.barajeado = true;
 }
 
 /** Recolecta todas las cartas del jugador (slots activos + extra) */
