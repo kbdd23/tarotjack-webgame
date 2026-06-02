@@ -1,9 +1,9 @@
 // --- DEVTOOLS: botones de depuración (desplegar, apilar, barajar, ordenar) ---
 
-import { state, barajarMazo, ordenarMazo, limpiarMano, hayCartasFuera } from '../core/state.js';
+import { state, barajarMazo, ordenarMazo, limpiarMano, hayCartasFuera, BOSSES } from '../core/state.js';
 import { refs } from '../ui/dom.js';
 import { posicionarApilado, desplegarGrilla } from '../ui/layout.js';
-import { actualizarPuntuacion, actualizarPuntuacionCrupier, ocultarResultado } from '../ui/display.js';
+import { actualizarPuntuacion, actualizarPuntuacionCrupier, ocultarResultado, actualizarHpDisplay, temblarCrupier, actualizarBossDisplay } from '../ui/display.js';
 import { setDragHabilitado, getDragHabilitado } from './drag.js';
 
 export function setupDevTools(panel) {
@@ -92,6 +92,18 @@ export function setupDevTools(panel) {
     toggleDrag: () => {
       const nuevo = !getDragHabilitado();
       setDragHabilitado(nuevo);
+    },
+
+    bajarHp: () => {
+      state.hpCrupierRestante = Math.max(0, state.hpCrupierRestante - 1);
+      actualizarHpDisplay();
+      temblarCrupier();
+      if (state.hpCrupierRestante === 0) {
+        state.bossActual = (state.bossActual + 1) % BOSSES.length;
+        state.hpCrupierRestante = BOSSES[state.bossActual].hp;
+        actualizarHpDisplay();
+        actualizarBossDisplay(BOSSES[state.bossActual]);
+      }
     },
   };
 }

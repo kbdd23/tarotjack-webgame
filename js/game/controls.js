@@ -117,9 +117,6 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
     panel.mostrarJuego();
     state.rondaActual += 1;
     actualizarRondaDisplay();
-
-    // Habilitar PEDIR si el handicap permite más cartas
-    if (state.maxCartasMano > 2) btnPedir.disabled = false;
   });
 
   // --- PEDIR (hit) ---
@@ -127,16 +124,39 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
   btnPedir.addEventListener('click', async () => {
     if (state.fase !== 'jugando') return;
 
+    // 1. Contar cartas actuales
     let countAct = 0;
     for (let s = 0; s < state.maxCartasMano; s++) {
       if (state.slotsOcupados[s] !== null) countAct++;
     }
     countAct += state.cartasExtra.length;
-    if (countAct >= state.maxCartasMano) {
+
+    // 2. Expandir solo si está lleno y no se ha llegado al tope
+    if (countAct >= state.maxCartasMano && state.maxCartasMano < 5) {
+      state.maxCartasMano = Math.min(state.maxCartasMano + 1, 5);
+      refs.slots.forEach((slot, i) => {
+        slot.style.display = i < state.maxCartasMano ? '' : 'none';
+      });
+      // Reubicar todas las cartas de la mano en los slots actualizados
+      for (let s = 0; s < state.maxCartasMano; s++) {
+        const idx = state.slotsOcupados[s];
+        if (idx !== null) {
+          escalarASlot(refs.cartasDOM[idx], s);
+        }
+      }
+      // Reubicar cartas extra existentes tras expandir
+      if (state.cartasExtra.length > 0) {
+        posicionarExtra();
+      }
+    }
+
+    // 3. Si ya llegó a 5, no se puede pedir más
+    if (countAct >= 5) {
       btnPedir.disabled = true;
       return;
     }
 
+    // 4. Sacar carta del mazo
     const cartaIdx = await _sacarCarta();
     if (cartaIdx === null) return;
 
@@ -161,20 +181,19 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
       posicionarExtra();
     }
 
+    posicionarApilado();
+
     actualizarPuntuacion();
 
-    // Calcular conteo actual para el contador y el límite de cartas
     let nuevoCount = 0;
     for (let s = 0; s < state.maxCartasMano; s++) {
       if (state.slotsOcupados[s] !== null) nuevoCount++;
     }
     nuevoCount += state.cartasExtra.length;
     panel.actualizarContador(nuevoCount, state.maxCartasMano);
-
-    if (nuevoCount >= state.maxCartasMano) {
+    if (nuevoCount >= 5) {
       btnPedir.disabled = true;
     }
-
   });
 
   // --- JUGAR (plantarse) ---
@@ -226,6 +245,7 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
         state.bossActual = (state.bossActual + 1) % BOSSES.length;
         state.hpCrupierRestante = BOSSES[state.bossActual].hp;
         actualizarHpDisplay();
+        actualizarBossDisplay(BOSSES[state.bossActual]);
       }
       barajarMazo();
       state.rondaActual = 0;

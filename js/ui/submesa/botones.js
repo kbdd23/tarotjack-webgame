@@ -35,12 +35,6 @@ export function crearBotonesJuego(subBottom, mesa) {
   refs.btnRow.appendChild(btnDescartar);
   refs.btnDescartar = btnDescartar;
 
-  const btnMasCarta = document.createElement('button');
-  btnMasCarta.id = 'btn-mas-carta';
-  btnMasCarta.textContent = '+1 CARTA';
-  btnMasCarta.title = 'Aumentar mano (dev)';
-  mesa.appendChild(btnMasCarta);
-
   const btnPedir = document.createElement('button');
   btnPedir.id = 'btn-pedir';
   btnPedir.textContent = 'PEDIR';
@@ -49,9 +43,6 @@ export function crearBotonesJuego(subBottom, mesa) {
   btnPedir.style.display = 'none';
   mesa.appendChild(btnPedir);
   refs.btnPedir = btnPedir;
-
-  // Colocar +1 CARTA justo antes de PEDIR en el DOM
-  mesa.insertBefore(btnMasCarta, btnPedir);
 
   const btnJugar = document.createElement('button');
   btnJugar.id = 'btn-jugar';
@@ -69,7 +60,7 @@ export function crearBotonesJuego(subBottom, mesa) {
   devToolsContainer.id = 'dev-tools';
 
   return {
-    btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnMasCarta,
+    btnRepartir, btnPedir, btnJugar, btnNuevaMano,
     contadorDisplay, btnDescartar, panel, devToolsContainer,
   };
 }

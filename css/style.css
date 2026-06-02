@@ -510,27 +510,6 @@ body {
   border-color: #888;
 }
 
-/* --- BOTÓN +1 CARTA (dev, sobre PEDIR) --- */
-#btn-mas-carta {
-  position: absolute;
-  right: 1.5rem;
-  bottom: 5rem;
-  background: #2a3a5a;
-  border: 1px solid #d4a017;
-  color: #e0eef8;
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 0.75rem;
-  padding: 6px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  z-index: 20;
-  transition: background 0.2s, color 0.2s;
-}
-#btn-mas-carta:hover {
-  background: #3a4a6a;
-  color: #fff;
-}
-
 /* --- BOTÓN NUEVA MANO --- */
 #btn-repartir {
   background: #1a2a4a;

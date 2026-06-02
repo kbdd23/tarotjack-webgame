@@ -123,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
   devGroup.appendChild(crearDevBtn('ORDENAR', devTools.ordenar));
   devGroup.appendChild(crearDevBtn('DESC. TODAS', devTools.descartarTodas));
   devGroup.appendChild(crearDevBtn('DRAG', devTools.toggleDrag));
+  devGroup.appendChild(crearDevBtn('-1 HP', devTools.bajarHp));
 
   btnToggleDev.addEventListener('click', () => {
     devGroup.style.display = devGroup.style.display === 'none' ? 'flex' : 'none';
@@ -131,9 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
   sub.devToolsContainer.appendChild(btnToggleDev);
   sub.devToolsContainer.appendChild(devGroup);
   body.appendChild(sub.devToolsContainer);
-
-  // ── BOTÓN DEV: +1 CARTA (visible siempre, antes de PEDIR) ──
-  sub.btnMasCarta.addEventListener('click', devTools.aumentarMano);
 
   // ── INICIO ────────────────────────────────────────────────────
   requestAnimationFrame(() => {

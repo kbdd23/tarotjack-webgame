@@ -15,7 +15,7 @@ export function crearSubmesa(body, mesa) {
   const crupierOverlay = crearOverlayCrupier(body);
   const { retirarseBtn } = crearWidgets(cont, personajeOverlay, crupierOverlay);
   const {
-    btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnMasCarta,
+    btnRepartir, btnPedir, btnJugar, btnNuevaMano,
     contadorDisplay, btnDescartar, panel, devToolsContainer,
   } = crearBotonesJuego(cont.subBottom, mesa);
 
@@ -40,7 +40,6 @@ export function crearSubmesa(body, mesa) {
     btnNuevaMano,
     contadorDisplay,
     btnDescartar,
-    btnMasCarta,
     retirarseBtn,
     panel,
     devToolsContainer,

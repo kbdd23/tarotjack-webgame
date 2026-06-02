@@ -1,6 +1,6 @@
 import { state, hayCartasFuera, liberarCarta, slotOcupado } from '../core/state.js';
 import { refs } from '../ui/dom.js';
-import { posicionarApilado, obtenerPosTransform } from '../ui/layout.js';
+import { posicionarApilado, obtenerPosTransform, escalarASlot } from '../ui/layout.js';
 import { actualizarPuntuacion } from '../ui/display.js';
 
 const SNAP_THRESHOLD = 70;
@@ -8,6 +8,7 @@ const SNAP_THRESHOLD = 70;
 let arrastrando = null;
 let _dragInicializado = false;
 let _dragHabilitado = false;
+let _slotOrigen = null;
 
 export function setDragHabilitado(val) {
   _dragHabilitado = val;
@@ -27,9 +28,11 @@ export function iniciarArrastre(e, div) {
   if (idx === state.cartaOcultaIdx) return;
   if (state.cartasExtra.includes(idx)) return;
 
+  _slotOrigen = null;
   for (let s = 0; s < state.maxCartasMano; s++) {
     if (state.slotsOcupados[s] === idx) {
       state.slotsOcupados[s] = null;
+      _slotOrigen = s;
       actualizarPuntuacion();
       break;
     }
@@ -109,10 +112,17 @@ export function terminarArrastre() {
   arrastrando.div.style.transition = '';
 
   if (!detectarSnap(arrastrando.div)) {
-    arrastrando.div.style.width = '80px';
-    arrastrando.div.style.height = '110px';
+    if (_slotOrigen !== null) {
+      state.slotsOcupados[_slotOrigen] = parseInt(arrastrando.div.dataset.idx);
+      escalarASlot(arrastrando.div, _slotOrigen);
+      actualizarPuntuacion();
+    } else {
+      arrastrando.div.style.width = '80px';
+      arrastrando.div.style.height = '110px';
+    }
   }
 
+  _slotOrigen = null;
   arrastrando = null;
 }
 

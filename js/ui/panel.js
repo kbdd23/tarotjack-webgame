@@ -17,7 +17,7 @@ export function setupPanel(btnRepartir, contadorDisplay, btnPedir, btnJugar, btn
     /** Muestra pedir + jugar, oculta repartir, muestra el contador */
     mostrarJuego: () => {
       btnPedir.style.display = '';
-      btnPedir.disabled = true;
+      btnPedir.disabled = false;
       btnJugar.disabled = false;
       btnNuevaMano.style.display = 'none';
       btnRepartir.style.display = 'none';
