@@ -39,6 +39,7 @@ export function setupPanel(btnRepartir, contadorDisplay, btnPedir, btnJugar, btn
       btnJugar.disabled = true;
       btnNuevaMano.style.display = 'none';
       btnRepartir.style.display = '';
+      btnRepartir.disabled = false;
       contadorDisplay.style.display = 'none';
     },
 

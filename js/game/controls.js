@@ -62,6 +62,7 @@ export function setup(panel, btnRepartir, btnPedir, btnJugar, btnNuevaMano, btnD
 
   btnRepartir.addEventListener('click', async () => {
     if (state.fase === 'jugando') return;
+    btnRepartir.disabled = true;
 
     // Animación de barajado inicial solo en la primera ronda
     if (state.rondaActual === 0) {
