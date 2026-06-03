@@ -2,7 +2,7 @@
 
 import { state, barajarMazo, ordenarMazo, limpiarMano, hayCartasFuera, BOSSES } from '../core/state.js';
 import { refs } from '../ui/dom.js';
-import { posicionarApilado, desplegarGrilla } from '../ui/layout.js';
+import { posicionarApilado, desplegarGrilla, aplicarOcultacion } from '../ui/layout.js';
 import { actualizarPuntuacion, actualizarPuntuacionCrupier, ocultarResultado, actualizarHpDisplay, temblarCrupier, actualizarBossDisplay } from '../ui/display.js';
 import { setDragHabilitado, getDragHabilitado } from './drag.js';
 
@@ -104,6 +104,11 @@ export function setupDevTools(panel) {
         actualizarHpDisplay();
         actualizarBossDisplay(BOSSES[state.bossActual]);
       }
+    },
+
+    ocultar: () => {
+      state.cartasReveladas = !state.cartasReveladas;
+      aplicarOcultacion();
     },
   };
 }

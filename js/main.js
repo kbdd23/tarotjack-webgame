@@ -124,6 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
   devGroup.appendChild(crearDevBtn('DESC. TODAS', devTools.descartarTodas));
   devGroup.appendChild(crearDevBtn('DRAG', devTools.toggleDrag));
   devGroup.appendChild(crearDevBtn('-1 HP', devTools.bajarHp));
+  devGroup.appendChild(crearDevBtn('OCULTAR', devTools.ocultar));
 
   btnToggleDev.addEventListener('click', () => {
     devGroup.style.display = devGroup.style.display === 'none' ? 'flex' : 'none';

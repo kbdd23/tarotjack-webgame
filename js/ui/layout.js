@@ -38,6 +38,8 @@ export function posicionarApilado() {
   refs.cartasDOM.forEach((div, i) => {
     if (esCartaEnJuego(i)) return;
     div.classList.remove('carta-jugador', 'carta-crupier');
+    if (!state.cartasReveladas) div.classList.add('carta-oculta');
+    else div.classList.remove('carta-oculta');
     div.style.width = '80px';
     div.style.height = '110px';
     div.style.transform = `translate(${x}px, ${y}px)`;
@@ -64,7 +66,8 @@ export function posicionarDescartes() {
     div.style.height = '110px';
     div.style.transform = `translate(${dx}px, ${dy}px)`;
     div.style.zIndex = 1;
-    div.classList.remove('carta-oculta');
+    if (!state.cartasReveladas) div.classList.add('carta-oculta');
+    else div.classList.remove('carta-oculta');
   });
 }
 
@@ -145,6 +148,7 @@ export function revelarCartaOculta() {
   if (state.cartaOcultaIdx === null) return;
   const div = refs.cartasDOM[state.cartaOcultaIdx];
   div.classList.remove('carta-oculta');
+  state.cartaOcultaRevelada = true;
   actualizarPuntuacionCrupier(false);
 }
 
@@ -166,6 +170,8 @@ export function posicionarNuevasCrupier() {
     div.style.transform = `translate(${sx}px, ${sy}px)`;
     div.style.zIndex = 10 + i;
     div.classList.add('carta-crupier');
+    // Cartas visibles del crupier no tienen dorso
+    if (idx !== state.cartaOcultaIdx) div.classList.remove('carta-oculta');
   });
 }
 
@@ -273,6 +279,7 @@ export function animarADescarte(div) {
   div.style.transform = 'translate(12px, 12px)';
   div.style.zIndex = 1;
   div.classList.remove('carta-jugador', 'carta-crupier');
+  if (!state.cartasReveladas) div.classList.add('carta-oculta');
 
   setTimeout(() => {
     div.style.transition = '';
@@ -296,4 +303,30 @@ export function escalarASlot(div, slotIdx) {
 
   setTimeout(() => { div.style.transition = ''; }, 450);
   div.classList.add('carta-jugador');
+  div.classList.remove('carta-oculta');
+}
+
+// --- OCULTACIÓN (dev-tool toggle) ---
+
+/** Reevalúa qué cartas deben mostrarse ocultas según `state.cartasReveladas`.
+ *  Cartas en mazo o descarte se ocultan; el resto se muestran.
+ *  Si `cartasReveladas` es true, todas se muestran.
+ *  La carta oculta del crupier solo se re-oculta si no ha sido revelada
+ *  durante el juego (state.cartaOcultaRevelada). */
+export function aplicarOcultacion() {
+  refs.cartasDOM.forEach((div, i) => {
+    if (state.cartasReveladas) {
+      div.classList.remove('carta-oculta');
+      return;
+    }
+    const enDeck = !esCartaEnJuego(i);
+    const enDescarte = state.cartasDescartadas.has(i);
+    if (enDeck || enDescarte) {
+      div.classList.add('carta-oculta');
+    }
+    // Restaurar carta oculta del crupier si no fue revelada en juego
+    if (i === state.cartaOcultaIdx && !state.cartaOcultaRevelada) {
+      div.classList.add('carta-oculta');
+    }
+  });
 }

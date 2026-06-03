@@ -45,6 +45,9 @@ export function iniciarArrastre(e, div) {
     liberarCarta(idx);
   }
 
+  // Mostrar la carta al jugador mientras la arrastra
+  div.classList.remove('carta-oculta');
+
   div.style.zIndex = 1000;
   div.style.transition = 'none';
 
@@ -99,6 +102,7 @@ function detectarSnap(div) {
     div.style.zIndex = '';
 
     slotOcupado(i, parseInt(div.dataset.idx));
+    div.classList.remove('carta-oculta');
     actualizarPuntuacion();
     return true;
   }

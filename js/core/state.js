@@ -32,6 +32,7 @@ export const state = {
   // --- CRUPIER ---
   manoCrupier: [],
   cartaOcultaIdx: null,
+  cartaOcultaRevelada: false, // true cuando revelarCartaOculta fue llamada en juego
   // --- FLUJO ---
   fase: 'esperando', // 'esperando' | 'jugando' | 'crupier' | 'fin'
   cartasExtra: [],   // índices de cartas pedidas por el jugador
@@ -43,6 +44,7 @@ export const state = {
   hpCrupierRestante: 3,
   tipoMazo: 'tarot', // 'tarot' | 'blackjack'
   reshuffleReciente: false, // true cuando sacarDelMazo hizo reshuffle
+  cartasReveladas: false,   // dev-tool: true = mostrar todas boca arriba
 };
 
 export function inicializarEstado(baraja, tipo) {
@@ -58,6 +60,7 @@ export function inicializarEstado(baraja, tipo) {
   state.recargasRestantes = 3;
   state.manoCrupier = [];
   state.cartaOcultaIdx = null;
+  state.cartaOcultaRevelada = false;
   state.fase = 'esperando';
   state.cartasExtra = [];
   state.resultado = null;
@@ -67,6 +70,7 @@ export function inicializarEstado(baraja, tipo) {
   state.bossActual = 0;
   state.hpCrupierRestante = BOSSES[0].hp;
   state.reshuffleReciente = false;
+  state.cartasReveladas = false;
 }
 
 export function hayCartasFuera() {
@@ -78,6 +82,7 @@ export function limpiarMano() {
   state.slotsOcupados = [null, null, null, null, null];
   state.manoCrupier = [];
   state.cartaOcultaIdx = null;
+  state.cartaOcultaRevelada = false;
   state.fase = 'esperando';
   state.cartasExtra = [];
   state.resultado = null;
@@ -105,6 +110,7 @@ export function finalizarRonda() {
   if (state.cartaOcultaIdx !== null) {
     state.cartasDescartadas.add(state.cartaOcultaIdx);
     state.cartaOcultaIdx = null;
+    state.cartaOcultaRevelada = false;
   }
   // Mover cartas extra a descarte
   for (const idx of state.cartasExtra) {
